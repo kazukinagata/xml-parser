@@ -37,7 +37,7 @@ module.exports = class {
             if (result.length > 1) {
                 xmlText = xmlText.replace(result[1], encodeURIComponent(result[1]));
             }
-            
+
             result = cdataRegex.exec(xmlText);
         }
 
@@ -154,7 +154,7 @@ module.exports = class {
         }
 
         if (tag.value.length > 0) {
-            tagText += '>' + tag.value + '</' + tag.name + '>';
+            tagText += '>' + tag.value;
         } else {
             tagText += '>';
         }
