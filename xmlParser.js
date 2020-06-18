@@ -15,6 +15,29 @@ module.exports = class {
         return matches;
     }
 
+    static removeElementByTagName(parent, tagName) {
+        if (!parent) return matches;
+
+        if (tagName == '*' || parent.name.toLowerCase() === tagName.toLowerCase()) {
+            return []
+        }
+
+        parent.children = parent.children.filter(child => {
+            if (typeof tagName === 'string') {
+                return child.name !== tagName
+            }
+            if (Array.isArray(tagName)) {
+                return tagName.includes(tagName)
+            }
+            return false
+        })
+        parent.children.map(child => {
+            this.removeElementByTagName(child, tagName);
+        });
+
+        return parent;
+    }
+
     _parseFromString(xmlText) {
         xmlText = this._encodeCDATAValues(xmlText);
         var cleanXmlText = xmlText.replace(/\s{2,}/g, ' ').replace(/\\t\\n\\r/g, '').replace(/>/g, '>\n').replace(/\]\]/g, ']]\n');
