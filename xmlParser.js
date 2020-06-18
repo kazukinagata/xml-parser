@@ -40,7 +40,7 @@ module.exports = class {
       return false
     })
     parent.children.map((child) => {
-      this.removeChildren(child, tagName)
+      this.removeChildrenByTagName(child, tagName)
     })
 
     return parent
