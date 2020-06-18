@@ -32,7 +32,7 @@ module.exports = class {
             return false
         })
         parent.children.map(child => {
-            this.removeElementByTagName(child, tagName);
+            this.removeElementsByTagName(child, tagName);
         });
 
         return parent;
