@@ -15,7 +15,7 @@ module.exports = class {
         return matches;
     }
 
-    static removeElementByTagName(parent, tagName) {
+    static removeElementsByTagName(parent, tagName) {
         if (!parent) return matches;
 
         if (tagName == '*' || parent.name.toLowerCase() === tagName.toLowerCase()) {
