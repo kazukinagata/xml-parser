@@ -2,6 +2,7 @@ module.exports = class {
     constructor() {}
     static getElementsByTagName(parent, tagName) {
         var matches = [];
+        if (!parent) return matches;
 
         if (tagName == '*' || parent.name.toLowerCase() === tagName.toLowerCase()) {
             matches.push(parent);
