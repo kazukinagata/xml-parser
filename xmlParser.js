@@ -15,20 +15,20 @@ module.exports = class {
     return matches
   }
 
-  static removeElementsByTagName(parent, tagName) {
+  static removeChildrenByTagName(parent, tagName) {
     if (!parent) return matches
 
-    if (
-      tagName == '*' ||
-      (typeof tagName === 'string' &&
-        parent.name.toLowerCase() === tagName.toLowerCase()) ||
-      (Array.isArray(tagName) &&
-        tagName
-          .map((name) => name.toLowerCase())
-          .includes(parent.name.toLowerCase()))
-    ) {
-      return []
-    }
+    // if (
+    //   tagName == '*' ||
+    //   (typeof tagName === 'string' &&
+    //     parent.name.toLowerCase() === tagName.toLowerCase()) ||
+    //   (Array.isArray(tagName) &&
+    //     tagName
+    //       .map((name) => name.toLowerCase())
+    //       .includes(parent.name.toLowerCase()))
+    // ) {
+    //   return []
+    // }
 
     parent.children = parent.children.filter((child) => {
       if (typeof tagName === 'string') {
@@ -40,7 +40,7 @@ module.exports = class {
       return false
     })
     parent.children.map((child) => {
-      this.removeElementsByTagName(child, tagName)
+      this.removeChildren(child, tagName)
     })
 
     return parent
