@@ -1,5 +1,18 @@
 module.exports = class {
     constructor() {}
+    static getElementsByTagName(parent, tagName) {
+        var matches = [];
+
+        if (tagName == '*' || parent.name.toLowerCase() === tagName.toLowerCase()) {
+            matches.push(parent);
+        }
+
+        parent.children.map(child => {
+            matches = matches.concat(this.getElementsByTagName(child, tagName));
+        });
+
+        return matches;
+    }
 
     _parseFromString(xmlText) {
         xmlText = this._encodeCDATAValues(xmlText);
@@ -44,19 +57,19 @@ module.exports = class {
         return xmlText;
     }
 
-    _getElementsByTagName(tagName) {
-        var matches = [];
+    // _getElementsByTagName(tagName) {
+    //     var matches = [];
 
-        if (tagName == '*' || this.name.toLowerCase() === tagName.toLowerCase()) {
-            matches.push(this);
-        }
+    //     if (tagName == '*' || this.name.toLowerCase() === tagName.toLowerCase()) {
+    //         matches.push(this);
+    //     }
 
-        this.children.map(child => {
-            matches = matches.concat(child.getElementsByTagName(tagName));
-        });
+    //     this.children.map(child => {
+    //         matches = matches.concat(child.getElementsByTagName(tagName));
+    //     });
 
-        return matches;
-    }
+    //     return matches;
+    // }
 
     _parseTag(tagText, parent) {
         var cleanTagText = tagText.match(/([^\s]*)=('([^']*?)'|"([^"]*?)")|([\/?\w\-\:]+)/g);
@@ -66,7 +79,7 @@ module.exports = class {
             attributes: {},
             children: [],
             value: '',
-            getElementsByTagName: this._getElementsByTagName
+            // getElementsByTagName: this._getElementsByTagName
         };
 
         cleanTagText.map(attribute => {
