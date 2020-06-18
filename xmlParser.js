@@ -1,207 +1,236 @@
 module.exports = class {
-    constructor() {}
-    static getElementsByTagName(parent, tagName) {
-        var matches = [];
-        if (!parent) return matches;
+  constructor() {}
+  static getElementsByTagName(parent, tagName) {
+    var matches = []
+    if (!parent) return matches
 
-        if (tagName == '*' || parent.name.toLowerCase() === tagName.toLowerCase()) {
-            matches.push(parent);
-        }
-
-        parent.children.map(child => {
-            matches = matches.concat(this.getElementsByTagName(child, tagName));
-        });
-
-        return matches;
+    if (tagName == '*' || parent.name.toLowerCase() === tagName.toLowerCase()) {
+      matches.push(parent)
     }
 
-    static removeElementsByTagName(parent, tagName) {
-        if (!parent) return matches;
+    parent.children.map((child) => {
+      matches = matches.concat(this.getElementsByTagName(child, tagName))
+    })
 
-        if (tagName == '*' || parent.name.toLowerCase() === tagName.toLowerCase()) {
-            return []
-        }
+    return matches
+  }
 
-        parent.children = parent.children.filter(child => {
-            if (typeof tagName === 'string') {
-                return child.name !== tagName
-            }
-            if (Array.isArray(tagName)) {
-                return tagName.includes(tagName)
-            }
-            return false
-        })
-        parent.children.map(child => {
-            this.removeElementsByTagName(child, tagName);
-        });
+  static removeChildrenByTagName(parent, tagName) {
+    if (!parent) return matches
 
-        return parent;
-    }
-
-    _parseFromString(xmlText) {
-        xmlText = this._encodeCDATAValues(xmlText);
-        var cleanXmlText = xmlText.replace(/\s{2,}/g, ' ').replace(/\\t\\n\\r/g, '').replace(/>/g, '>\n').replace(/\]\]/g, ']]\n');
-        var rawXmlData = [];
-
-        cleanXmlText.split('\n').map(element => {
-            element = element.trim();
-
-            if (!element || element.indexOf('?xml') > -1 || element.indexOf('<!--') > -1) {
-                return;
-            }
-
-            if (element.indexOf('<') == 0 && element.indexOf('CDATA') < 0) {
-                var parsedTag = this._parseTag(element);
-
-                rawXmlData.push(parsedTag);
-
-                if (element.match(/\/\s*>$/)) {
-                    rawXmlData.push(this._parseTag('</' + parsedTag.name + '>'));
-                }
-            } else {
-                rawXmlData[rawXmlData.length - 1].value += ` ${this._parseValue(element)}`;
-            }
-
-        });
-
-        return this._convertTagsArrayToTree(rawXmlData)[0];
-    }
-
-    _encodeCDATAValues(xmlText) {
-        var cdataRegex = new RegExp(/<!CDATA\[([^\]\]]+)\]\]/gi);
-        var result = cdataRegex.exec(xmlText);
-        while (result) {
-            if (result.length > 1) {
-                xmlText = xmlText.replace(result[1], encodeURIComponent(result[1]));
-            }
-
-            result = cdataRegex.exec(xmlText);
-        }
-
-        return xmlText;
-    }
-
-    // _getElementsByTagName(tagName) {
-    //     var matches = [];
-
-    //     if (tagName == '*' || this.name.toLowerCase() === tagName.toLowerCase()) {
-    //         matches.push(this);
-    //     }
-
-    //     this.children.map(child => {
-    //         matches = matches.concat(child.getElementsByTagName(tagName));
-    //     });
-
-    //     return matches;
+    // if (
+    //   tagName == '*' ||
+    //   (typeof tagName === 'string' &&
+    //     parent.name.toLowerCase() === tagName.toLowerCase()) ||
+    //   (Array.isArray(tagName) &&
+    //     tagName
+    //       .map((name) => name.toLowerCase())
+    //       .includes(parent.name.toLowerCase()))
+    // ) {
+    //   return []
     // }
 
-    _parseTag(tagText, parent) {
-        var cleanTagText = tagText.match(/([^\s]*)=('([^']*?)'|"([^"]*?)")|([\/?\w\-\:]+)/g);
+    parent.children = parent.children.filter((child) => {
+      if (typeof tagName === 'string') {
+        return child.name !== tagName
+      }
+      if (Array.isArray(tagName)) {
+        return tagName.includes(tagName)
+      }
+      return false
+    })
+    parent.children.map((child) => {
+      this.removeChildren(child, tagName)
+    })
 
-        var tag = {
-            name: cleanTagText.shift().replace(/\/\s*$/, ''),
-            attributes: {},
-            children: [],
-            value: '',
-            // getElementsByTagName: this._getElementsByTagName
-        };
+    return parent
+  }
 
-        cleanTagText.map(attribute => {
-            var attributeKeyVal = attribute.split('=');
+  _parseFromString(xmlText) {
+    xmlText = this._encodeCDATAValues(xmlText)
+    var cleanXmlText = xmlText
+      .replace(/\s{2,}/g, ' ')
+      .replace(/\\t\\n\\r/g, '')
+      .replace(/>/g, '>\n')
+      .replace(/\]\]/g, ']]\n')
+    var rawXmlData = []
 
-            if (attributeKeyVal.length < 2) {
-                return;
-            }
+    cleanXmlText.split('\n').map((element) => {
+      element = element.trim()
 
-            var attributeKey = attributeKeyVal[0];
-            var attributeVal = '';
+      if (
+        !element ||
+        element.indexOf('?xml') > -1 ||
+        element.indexOf('<!--') > -1
+      ) {
+        return
+      }
 
-            if (attributeKeyVal.length === 2) {
-                attributeVal = attributeKeyVal[1];
-            } else {
-                attributeKeyVal = attributeKeyVal.slice(1);
-                attributeVal = attributeKeyVal.join('=');
-            }
+      if (element.indexOf('<') == 0 && element.indexOf('CDATA') < 0) {
+        var parsedTag = this._parseTag(element)
 
-            tag.attributes[attributeKey] = 'string' === typeof attributeVal ? (attributeVal.replace(/^"/g, '').replace(/^'/g, '').replace(/"$/g, '').replace(/'$/g, '').trim()) : attributeVal;
-        });
+        rawXmlData.push(parsedTag)
 
-        return tag;
-    }
-
-    _parseValue(tagValue) {
-        if (tagValue.indexOf('CDATA') < 0) {
-            return tagValue.trim();
+        if (element.match(/\/\s*>$/)) {
+          rawXmlData.push(this._parseTag('</' + parsedTag.name + '>'))
         }
+      } else {
+        rawXmlData[rawXmlData.length - 1].value += ` ${this._parseValue(
+          element
+        )}`
+      }
+    })
 
-        return tagValue.substring(tagValue.lastIndexOf('[') + 1, tagValue.indexOf(']'));
+    return this._convertTagsArrayToTree(rawXmlData)[0]
+  }
+
+  _encodeCDATAValues(xmlText) {
+    var cdataRegex = new RegExp(/<!CDATA\[([^\]\]]+)\]\]/gi)
+    var result = cdataRegex.exec(xmlText)
+    while (result) {
+      if (result.length > 1) {
+        xmlText = xmlText.replace(result[1], encodeURIComponent(result[1]))
+      }
+
+      result = cdataRegex.exec(xmlText)
     }
 
-    _convertTagsArrayToTree(xml) {
-        var xmlTree = [];
+    return xmlText
+  }
 
-        while(xml.length > 0) {
-            var tag = xml.shift();
+  // _getElementsByTagName(tagName) {
+  //     var matches = [];
 
-            if (tag.value.indexOf('</') > -1 || tag.name.match(/\/$/)) {
-                tag.name = tag.name.replace(/\/$/, '').trim();
-                tag.value = tag.value.substring(0, tag.value.indexOf('</')).trim();
-                xmlTree.push(tag);
-                continue;
-            }
+  //     if (tagName == '*' || this.name.toLowerCase() === tagName.toLowerCase()) {
+  //         matches.push(this);
+  //     }
 
-            if (tag.name.indexOf('/') == 0) {
-                break;
-            }
+  //     this.children.map(child => {
+  //         matches = matches.concat(child.getElementsByTagName(tagName));
+  //     });
 
-            xmlTree.push(tag);
-            tag.children = this._convertTagsArrayToTree(xml);
-            tag.value = decodeURIComponent(tag.value.trim());
-        }
-        return xmlTree;
+  //     return matches;
+  // }
+
+  _parseTag(tagText, parent) {
+    var cleanTagText = tagText.match(
+      /([^\s]*)=('([^']*?)'|"([^"]*?)")|([\/?\w\-\:]+)/g
+    )
+
+    var tag = {
+      name: cleanTagText.shift().replace(/\/\s*$/, ''),
+      attributes: {},
+      children: [],
+      value: '',
+      // getElementsByTagName: this._getElementsByTagName
     }
 
-    _toString(xml) {
-        var xmlText = this._convertTagToText(xml);
+    cleanTagText.map((attribute) => {
+      var attributeKeyVal = attribute.split('=')
 
+      if (attributeKeyVal.length < 2) {
+        return
+      }
 
-        if (xml.children.length > 0) {
-            xml.children.map(child => {
-                xmlText += this._toString(child);
-            });
+      var attributeKey = attributeKeyVal[0]
+      var attributeVal = ''
 
-            xmlText += '</' + xml.name + '>';
-        }
+      if (attributeKeyVal.length === 2) {
+        attributeVal = attributeKeyVal[1]
+      } else {
+        attributeKeyVal = attributeKeyVal.slice(1)
+        attributeVal = attributeKeyVal.join('=')
+      }
 
-        return xmlText;
+      tag.attributes[attributeKey] =
+        'string' === typeof attributeVal
+          ? attributeVal
+              .replace(/^"/g, '')
+              .replace(/^'/g, '')
+              .replace(/"$/g, '')
+              .replace(/'$/g, '')
+              .trim()
+          : attributeVal
+    })
+
+    return tag
+  }
+
+  _parseValue(tagValue) {
+    if (tagValue.indexOf('CDATA') < 0) {
+      return tagValue.trim()
     }
 
-    _convertTagToText(tag) {
-        var tagText = '<' + tag.name;
-        var attributesText = [];
+    return tagValue.substring(
+      tagValue.lastIndexOf('[') + 1,
+      tagValue.indexOf(']')
+    )
+  }
 
-        for (var attribute in tag.attributes) {
-            tagText += ' ' + attribute + '="' + tag.attributes[attribute] + '"';
-        }
+  _convertTagsArrayToTree(xml) {
+    var xmlTree = []
 
-        if (tag.value.length > 0) {
-            tagText += '>' + tag.value;
-        } else {
-            tagText += '>';
-        }
+    while (xml.length > 0) {
+      var tag = xml.shift()
 
-        if (tag.children.length === 0) {
-            tagText += '</' + tag.name + '>';
-        }
+      if (tag.value.indexOf('</') > -1 || tag.name.match(/\/$/)) {
+        tag.name = tag.name.replace(/\/$/, '').trim()
+        tag.value = tag.value.substring(0, tag.value.indexOf('</')).trim()
+        xmlTree.push(tag)
+        continue
+      }
 
-        return tagText;
+      if (tag.name.indexOf('/') == 0) {
+        break
+      }
+
+      xmlTree.push(tag)
+      tag.children = this._convertTagsArrayToTree(xml)
+      tag.value = decodeURIComponent(tag.value.trim())
+    }
+    return xmlTree
+  }
+
+  _toString(xml) {
+    var xmlText = this._convertTagToText(xml)
+
+    if (xml.children.length > 0) {
+      xml.children.map((child) => {
+        xmlText += this._toString(child)
+      })
+
+      xmlText += '</' + xml.name + '>'
     }
 
-    parseFromString(xmlText) {
-        return this._parseFromString(xmlText);
+    return xmlText
+  }
+
+  _convertTagToText(tag) {
+    var tagText = '<' + tag.name
+    var attributesText = []
+
+    for (var attribute in tag.attributes) {
+      tagText += ' ' + attribute + '="' + tag.attributes[attribute] + '"'
     }
 
-    toString(xml) {
-        return this._toString(xml);
+    if (tag.value.length > 0) {
+      tagText += '>' + tag.value
+    } else {
+      tagText += '>'
     }
-};
+
+    if (tag.children.length === 0) {
+      tagText += '</' + tag.name + '>'
+    }
+
+    return tagText
+  }
+
+  parseFromString(xmlText) {
+    return this._parseFromString(xmlText)
+  }
+
+  toString(xml) {
+    return this._toString(xml)
+  }
+}
