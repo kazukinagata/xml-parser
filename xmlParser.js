@@ -1,4 +1,4 @@
-const { nanoid } = require('nanoid')
+const uuid = require('uuid')
 
 module.exports = class {
   constructor() {}
@@ -120,7 +120,7 @@ module.exports = class {
     )
 
     var tag = {
-      id: nanoid(),
+      id: uuid.v4(),
       name: cleanTagText.shift().replace(/\/\s*$/, ''),
       attributes: {},
       children: [],
