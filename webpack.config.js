@@ -10,7 +10,7 @@ module.exports = {
     output: {
       path: path.join(__dirname, 'dist'),
       filename: 'bundle.js',
-      libraryTarget: "umd",
+      libraryTarget: "commonjs2",
       globalObject: 'this',
     },
     resolve: {
