@@ -1,3 +1,5 @@
+const { nanoid } = require('nanoid')
+
 module.exports = class {
   constructor() {}
   static getElementsByTagName(parent, tagName) {
@@ -118,6 +120,7 @@ module.exports = class {
     )
 
     var tag = {
+      id: nanoid(),
       name: cleanTagText.shift().replace(/\/\s*$/, ''),
       attributes: {},
       children: [],
