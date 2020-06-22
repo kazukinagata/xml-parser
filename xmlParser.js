@@ -120,11 +120,13 @@ module.exports = class {
     )
 
     var tag = {
-      id: uuid.v4(),
       name: cleanTagText.shift().replace(/\/\s*$/, ''),
       attributes: {},
       children: [],
       value: '',
+      meta: {
+        uuid: uuid.v4(),
+      }
       // getElementsByTagName: this._getElementsByTagName
     }
 
