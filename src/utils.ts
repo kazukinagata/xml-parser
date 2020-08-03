@@ -9,3 +9,10 @@ export function camelCaseToHyphen(string: string) {
     return '-' + s.charAt(0).toLowerCase()
   })
 }
+
+export function invertObject(obj: { [x: string]: string }) {
+  return Object.keys(obj).reduce<{ [x: string]: string }>(
+    (inverted, key) => ({ ...inverted, [inverted[key]]: key }),
+    {}
+  )
+}

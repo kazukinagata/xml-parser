@@ -1,12 +1,9 @@
-import { v4 as uuidv4 } from 'uuid'
 import { Tree, XmlParserOptions, ParseType } from './types'
 import { ELEMENT_TAG_NAME_MAPPING, ATTRIBUTE_MAPPING } from './const'
-import { hyphenToCamelCase, camelCaseToHyphen } from './utils'
-import _ from 'lodash'
+import { hyphenToCamelCase, camelCaseToHyphen, invertObject } from './utils'
 
 export default class {
   private parseType: ParseType
-  private withUuid: boolean
   private ignoredTags: string[]
   private ignoredTagAttrs: string[]
   onTagParsed: ((tree: Tree) => Tree) | undefined
@@ -14,13 +11,11 @@ export default class {
   constructor(options?: XmlParserOptions) {
     const {
       type = 'react',
-      withUuid = true,
       ignoredTags = [],
       ignoredTagAttrs = [],
       onTagParsed,
     } = options || {}
     this.parseType = type
-    this.withUuid = withUuid
     this.ignoredTags = ignoredTags
     this.ignoredTagAttrs = ignoredTagAttrs
     this.onTagParsed = onTagParsed
@@ -112,11 +107,6 @@ export default class {
       children: [],
       value: '',
     }
-    if (this.withUuid) {
-      tag.meta = {
-        uuid: uuidv4(),
-      }
-    }
 
     cleanTagText.map((attribute) => {
       let attributeKeyVal = attribute.split('=')
@@ -190,12 +180,12 @@ export default class {
   }
   private _getTagName(tagName: string, invert: boolean = false) {
     const map = invert
-      ? _.invert(ELEMENT_TAG_NAME_MAPPING)
+      ? invertObject(ELEMENT_TAG_NAME_MAPPING)
       : ELEMENT_TAG_NAME_MAPPING
     return this.parseType === 'react' && map[tagName] ? map[tagName] : tagName
   }
   private _getAttributeKey(key: string, invert: boolean = false) {
-    const map = invert ? _.invert(ATTRIBUTE_MAPPING) : ATTRIBUTE_MAPPING
+    const map = invert ? invertObject(ATTRIBUTE_MAPPING) : ATTRIBUTE_MAPPING
     return this.parseType === 'react' && map[key] ? map[key] : key
   }
   private _parseValue(tagValue: string) {

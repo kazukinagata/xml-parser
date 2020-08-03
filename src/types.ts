@@ -14,9 +14,8 @@ export type ParseType = 'react' | 'dom'
 
 export interface XmlParserOptions {
   type?: ParseType
-  withUuid?: boolean
   ignoredTags?: string[]
   ignoredTagAttrs?: string[]
-  onTagParsed?: (tree: Tree) => Tree
+  postTagParsed?: (tree: Tree) => Tree
 
 }
