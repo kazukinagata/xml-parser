@@ -2,7 +2,7 @@ import React from 'react'
 export interface Tree {
   name: string
   attributes: {
-    style?: React.CSSProperties | {[x: string]: string}
+    style?: any
     [x: string]: any
   }
   children: Tree[]
