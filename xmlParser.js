@@ -9,7 +9,7 @@ module.exports = class {
         cleanXmlText.split('\n').map(element => {
             element = element.trim();
 
-            if (!element || element.indexOf('?xml') > -1) {
+            if (!element || element.indexOf('?xml') > -1 || element.indexOf('<!--') > -1) {
                 return;
             }
 
