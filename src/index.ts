@@ -80,7 +80,7 @@ export default class {
       }
     })
 
-    return this._convertTagsArrayToTree(rawXmlData)[0]
+    return this._convertTagsArrayToTree(rawXmlData).shift()
   }
 
   private _encodeCDATAValues(xmlText: string) {
