@@ -1,6 +1,19 @@
 module.exports = class {
     constructor() {}
+    static getElementsByTagName(parent, tagName) {
+        var matches = [];
+        if (!parent) return matches;
 
+        if (tagName == '*' || parent.name.toLowerCase() === tagName.toLowerCase()) {
+            matches.push(parent);
+        }
+
+        parent.children.map(child => {
+            matches = matches.concat(this.getElementsByTagName(child, tagName));
+        });
+
+        return matches;
+    }
     _parseFromString(xmlText) {
         xmlText = this._encodeCDATAValues(xmlText);
         var cleanXmlText = xmlText.replace(/\s{2,}/g, ' ').replace(/\\t\\n\\r/g, '').replace(/>/g, '>\n').replace(/\]\]/g, ']]\n');
@@ -44,20 +57,6 @@ module.exports = class {
         return xmlText;
     }
 
-    _getElementsByTagName(tagName) {
-        var matches = [];
-
-        if (tagName == '*' || this.name.toLowerCase() === tagName.toLowerCase()) {
-            matches.push(this);
-        }
-
-        this.children.map(child => {
-            matches = matches.concat(child.getElementsByTagName(tagName));
-        });
-
-        return matches;
-    }
-
     _parseTag(tagText, parent) {
         var cleanTagText = tagText.match(/([^\s]*)=('([^']*?)'|"([^"]*?)")|([\/?\w\-\:]+)/g);
 
@@ -66,7 +65,6 @@ module.exports = class {
             attributes: {},
             children: [],
             value: '',
-            getElementsByTagName: this._getElementsByTagName
         };
 
         cleanTagText.map(attribute => {
