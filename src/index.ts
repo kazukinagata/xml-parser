@@ -1,9 +1,31 @@
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid'
 import { Tree, XmlParserOptions, ParseType } from './types'
+import { ELEMENT_TAG_NAME_MAPPING, ATTRIBUTE_MAPPING } from './const'
+import { hyphenToCamelCase, camelCaseToHyphen } from './utils'
+import _ from 'lodash'
 
 export default class {
   private parseType: ParseType
-  private withId: boolean
+  private withUuid: boolean
+  private ignoredTags: string[]
+  private ignoredTagAttrs: string[]
+  onTagParsed: ((tree: Tree) => Tree) | undefined
+
+  constructor(options?: XmlParserOptions) {
+    const {
+      type = 'react',
+      withUuid = true,
+      ignoredTags = [],
+      ignoredTagAttrs = [],
+      onTagParsed,
+    } = options || {}
+    this.parseType = type
+    this.withUuid = withUuid
+    this.ignoredTags = ignoredTags
+    this.ignoredTagAttrs = ignoredTagAttrs
+    this.onTagParsed = onTagParsed
+  }
+
   static getElementsByTagName(parent: Tree, tagName: string) {
     let matches: Tree[] = []
     if (!parent) return matches
@@ -19,11 +41,6 @@ export default class {
     return matches
   }
 
-  constructor(options?: XmlParserOptions) {
-    const { type = 'react', withId = true } = options || {}
-    this.parseType = type
-    this.withId = withId
-  }
   private _parseFromString(xmlText: string) {
     xmlText = this._encodeCDATAValues(xmlText)
     const cleanXmlText = xmlText
@@ -86,14 +103,19 @@ export default class {
     )
     if (!cleanTagText) return false
 
+    const tagName = (cleanTagText.shift() || '').replace(/\/\s*$/, '')
+    if (this.ignoredTags.includes(tagName)) return false
+
     const tag: Tree = {
-      name: (cleanTagText.shift() || '').replace(/\/\s*$/, ''),
+      name: this._getTagName(tagName),
       attributes: {},
       children: [],
       value: '',
-      meta: {
+    }
+    if (this.withUuid) {
+      tag.meta = {
         uuid: uuidv4(),
-      },
+      }
     }
 
     cleanTagText.map((attribute) => {
@@ -103,30 +125,79 @@ export default class {
         return
       }
 
-      const attributeKey = attributeKeyVal[0]
+      if (this.ignoredTagAttrs.includes(attributeKeyVal[0])) {
+        return
+      }
+
+      const attributeKey = this._getAttributeKey(attributeKeyVal[0])
       let attributeVal = ''
 
       if (attributeKeyVal.length === 2) {
         attributeVal = attributeKeyVal[1]
       } else {
+        // attributeKeyVal.length > 2
         attributeKeyVal = attributeKeyVal.slice(1)
         attributeVal = attributeKeyVal.join('=')
       }
+      const sanitizedAttributeVal = attributeVal
+        .replace(/^["']/g, '')
+        .replace(/["']$/g, '')
+        .trim()
 
       tag.attributes[attributeKey] =
-        'string' === typeof attributeVal
-          ? attributeVal
-              .replace(/^"/g, '')
-              .replace(/^'/g, '')
-              .replace(/"$/g, '')
-              .replace(/'$/g, '')
-              .trim()
-          : attributeVal
+        attributeKey === 'style'
+          ? this._inlineStyleToObject(sanitizedAttributeVal)
+          : sanitizedAttributeVal
     })
 
-    return tag
+    return this.onTagParsed ? this.onTagParsed(tag) : tag
   }
 
+  private _inlineStyleToObject(styles: string) {
+    if (!styles.endsWith(';')) {
+      styles += ';'
+    }
+    const attributes = styles.split(';').filter((str) => str)
+    const results: { [x: string]: string | number } = {}
+    attributes.forEach((attr: string) => {
+      let [key, value] = attr.split(':')
+      switch (key) {
+        case 'font-size':
+          this.parseType === 'react'
+            ? (results[hyphenToCamelCase(key)] = parseFloat(value.trim()))
+            : results[key] = value.trim()
+          break
+
+        default:
+          this.parseType === 'react'
+            ? (results[hyphenToCamelCase(key)] = value.trim())
+            : results[key] = value.trim()
+          break
+      }
+    })
+
+    return results
+  }
+  private _objectStyleToInline = (style: { [x: string]: string }) => {
+    return Object.keys(style).reduce(
+      (str, key) =>
+        (str +=
+          this.parseType === 'react'
+            ? `${camelCaseToHyphen(key)}: ${style[key]};`
+            : `${key}: ${style[key]};`),
+      ``
+    )
+  }
+  private _getTagName(tagName: string, invert: boolean = false) {
+    const map = invert
+      ? _.invert(ELEMENT_TAG_NAME_MAPPING)
+      : ELEMENT_TAG_NAME_MAPPING
+    return this.parseType === 'react' && map[tagName] ? map[tagName] : tagName
+  }
+  private _getAttributeKey(key: string, invert: boolean = false) {
+    const map = invert ? _.invert(ATTRIBUTE_MAPPING) : ATTRIBUTE_MAPPING
+    return this.parseType === 'react' && map[key] ? map[key] : key
+  }
   private _parseValue(tagValue: string) {
     if (tagValue.indexOf('CDATA') < 0) {
       return tagValue.trim()
@@ -165,23 +236,37 @@ export default class {
 
   private _toString(xml: Tree) {
     let xmlText = this._convertTagToText(xml)
-
     if (xml.children.length > 0) {
       xml.children.map((child) => {
         xmlText += this._toString(child)
       })
 
-      xmlText += '</' + xml.name + '>'
+      xmlText +=
+        this.parseType === 'react'
+          ? '</' + this._getTagName(xml.name, true) + '>'
+          : '</' + xml.name + '>'
     }
 
     return xmlText
   }
 
   private _convertTagToText(tag: Tree) {
-    let tagText = '<' + tag.name
+    let tagText =
+      this.parseType === 'react'
+        ? '<' + this._getTagName(tag.name)
+        : '<' + tag.name
 
     for (let attribute in tag.attributes) {
-      tagText += ' ' + attribute + '="' + tag.attributes[attribute] + '"'
+      if (attribute === 'style') {
+        tagText +=
+          ' ' +
+          attribute +
+          '="' +
+          this._objectStyleToInline(tag.attributes[attribute]!) +
+          '"'
+      } else {
+        tagText += ' ' + attribute + '="' + tag.attributes[attribute] + '"'
+      }
     }
 
     if (tag.value.length > 0) {
@@ -191,7 +276,10 @@ export default class {
     }
 
     if (tag.children.length === 0) {
-      tagText += '</' + tag.name + '>'
+      tagText +=
+        this.parseType === 'react'
+          ? '</' + this._getTagName(tag.name) + '>'
+          : '</' + tag.name + '>'
     }
 
     return tagText
