@@ -16,6 +16,6 @@ export interface XmlParserOptions {
   type?: ParseType
   ignoredTags?: string[]
   ignoredTagAttrs?: string[]
-  postTagParsed?: (tree: Tree) => Tree
+  onTagParsed?: (tree: Tree) => Tree
 
 }
