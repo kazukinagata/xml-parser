@@ -1,3 +1,5 @@
+const uuid = require('uuid')
+
 module.exports = class {
     constructor() {}
     static getElementsByTagName(parent, tagName) {
@@ -65,6 +67,9 @@ module.exports = class {
             attributes: {},
             children: [],
             value: '',
+            meta: {
+                uuid: uuid.v4()
+            }
         };
 
         cleanTagText.map(attribute => {
