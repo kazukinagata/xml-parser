@@ -26,7 +26,7 @@ export default class {
     this.onTagParsed = onTagParsed
   }
 
-  static getElementsByTagName(parent: Tree, tagName: string) {
+  static getElementsByTagName(parent: Tree | null, tagName: string) {
     let matches: Tree[] = []
     if (!parent) return matches
 
