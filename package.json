@@ -1,6 +1,6 @@
 {
   "name": "@kazukinagata/react-xml-parser",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "XML parser for react-native",
   "main": "dist/index.js",
   "types": "dist/index.js",
