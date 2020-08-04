@@ -231,26 +231,20 @@ export default class {
         xmlText += this._toString(child)
       })
 
-      xmlText +=
-        this.parseType === 'react'
-          ? '</' + this._getTagName(xml.name, true) + '>'
-          : '</' + xml.name + '>'
+      xmlText += '</' + this._getTagName(xml.name, true) + '>'
     }
 
     return xmlText
   }
 
   private _convertTagToText(tag: Tree) {
-    let tagText =
-      this.parseType === 'react'
-        ? '<' + this._getTagName(tag.name)
-        : '<' + tag.name
+    let tagText = '<' + this._getTagName(tag.name)
 
     for (let attribute in tag.attributes) {
       if (attribute === 'style') {
         tagText +=
           ' ' +
-          attribute +
+          this._getAttributeKey(attribute, true) +
           '="' +
           this._objectStyleToInline(tag.attributes[attribute]!) +
           '"'
@@ -266,10 +260,7 @@ export default class {
     }
 
     if (tag.children.length === 0) {
-      tagText +=
-        this.parseType === 'react'
-          ? '</' + this._getTagName(tag.name) + '>'
-          : '</' + tag.name + '>'
+      tagText += '</' + this._getTagName(tag.name) + '>'
     }
 
     return tagText
