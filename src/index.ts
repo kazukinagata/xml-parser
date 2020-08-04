@@ -239,7 +239,6 @@ export default class {
 
   private _convertTagToText(tag: Tree) {
     let tagText = '<' + this._getTagName(tag.name)
-
     for (let attribute in tag.attributes) {
       if (attribute === 'style') {
         tagText +=

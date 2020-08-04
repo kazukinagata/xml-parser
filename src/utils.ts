@@ -12,7 +12,7 @@ export function camelCaseToHyphen(string: string) {
 
 export function invertObject(obj: { [x: string]: string }) {
   return Object.keys(obj).reduce<{ [x: string]: string }>(
-    (inverted, key) => ({ ...inverted, [inverted[key]]: key }),
+    (inverted, key) => ({ ...inverted, [obj[key]]: key }),
     {}
   )
 }
