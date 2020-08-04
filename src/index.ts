@@ -255,7 +255,7 @@ export default class {
           this._objectStyleToInline(tag.attributes[attribute]!) +
           '"'
       } else {
-        tagText += ' ' + attribute + '="' + tag.attributes[attribute] + '"'
+        tagText += ' ' + this._getAttributeKey(attribute, true) + '="' + tag.attributes[attribute] + '"'
       }
     }
 
