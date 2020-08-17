@@ -76,7 +76,6 @@ export default class {
         )}`
       }
     })
-
     return this._convertTagsArrayToTree(rawXmlData).shift()
   }
 
@@ -100,13 +99,13 @@ export default class {
     )
     if (!cleanTagText) return false
 
-    if (this.onIgnoring) return false
-
     const tagName = (cleanTagText.shift() || '').replace(/\/\s*$/, '')
-    if (this.ignoredTags.includes(tagName)) {
+    if (this.ignoredTags.includes(tagName.replace('/', ''))) {
       // igonore following tags until the ignoredTag has been closed
-      this.onIgnoring = !tagText.match(/\/\s*>$/)
+      this.onIgnoring = !tagText.match(/\/\s*>$/) && tagName.indexOf('/') !== 0
+      return false
     }
+    if (this.onIgnoring) return false
 
     const tag: Tree = {
       name: this._getTagName(tagName),

@@ -45,6 +45,7 @@ test('options.ignoredTags ignore the tag end children when parse string', () => 
   const parser = new XMLParser({ignoredTags: ['font']})
   const tree = parser.parseFromString(sampleSVG)
   expect(tree?.children.length).toBe(2)
+  expect(tree?.children.map(node => node.name)).toEqual(['style', 'g'])
 })
 
 test('options.ignoredTagAttrs ignore the tag attribute when parse string', () => {
