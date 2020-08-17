@@ -6,7 +6,8 @@ export default class {
   private parseType: ParseType
   private ignoredTags: string[]
   private ignoredTagAttrs: string[]
-  onTagParsed: ((tree: Tree) => Tree) | undefined
+  private onTagParsed: ((tree: Tree) => Tree) | undefined
+  onIgnoring: boolean
 
   constructor(options?: XmlParserOptions) {
     const {
@@ -19,6 +20,7 @@ export default class {
     this.ignoredTags = ignoredTags
     this.ignoredTagAttrs = ignoredTagAttrs
     this.onTagParsed = onTagParsed
+    this.onIgnoring = false
   }
 
   static getElementsByTagName(parent: Tree | null, tagName: string) {
@@ -98,8 +100,13 @@ export default class {
     )
     if (!cleanTagText) return false
 
+    if (this.onIgnoring) return false
+
     const tagName = (cleanTagText.shift() || '').replace(/\/\s*$/, '')
-    if (this.ignoredTags.includes(tagName)) return false
+    if (this.ignoredTags.includes(tagName)) {
+      // igonore following tags until the ignoredTag has been closed
+      this.onIgnoring = !tagText.match(/\/\s*>$/)
+    }
 
     const tag: Tree = {
       name: this._getTagName(tagName),
@@ -238,7 +245,7 @@ export default class {
   }
 
   private _convertTagToText(tag: Tree) {
-    let tagText = '<' + this._getTagName(tag.name)
+    let tagText = '<' + this._getTagName(tag.name, true)
     for (let attribute in tag.attributes) {
       if (attribute === 'style') {
         tagText +=
@@ -259,7 +266,7 @@ export default class {
     }
 
     if (tag.children.length === 0) {
-      tagText += '</' + this._getTagName(tag.name) + '>'
+      tagText += '</' + this._getTagName(tag.name, true) + '>'
     }
 
     return tagText

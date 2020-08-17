@@ -1,4 +1,2 @@
-node_modules
-tmp/
-debug.ts
+node_modules/
 dist/
