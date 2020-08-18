@@ -3,23 +3,14 @@ import { ELEMENT_TAG_NAME_MAPPING, ATTRIBUTE_MAPPING } from './const'
 import { hyphenToCamelCase, camelCaseToHyphen, invertObject } from './utils'
 
 export default class {
-  private parseType: ParseType
-  private ignoredTags: string[]
-  private ignoredTagAttrs: string[]
+  private parseType: ParseType = "react"
+  private ignoredTags: string[] = []
+  private ignoredTagAttrs: string[] = []
   private onTagParsed: ((tree: Tree) => Tree) | undefined
   onIgnoring: boolean
 
   constructor(options?: XmlParserOptions) {
-    const {
-      type = 'react',
-      ignoredTags = [],
-      ignoredTagAttrs = [],
-      onTagParsed,
-    } = options || {}
-    this.parseType = type
-    this.ignoredTags = ignoredTags
-    this.ignoredTagAttrs = ignoredTagAttrs
-    this.onTagParsed = onTagParsed
+    this.setOptions(options || {})
     this.onIgnoring = false
   }
 
@@ -269,6 +260,19 @@ export default class {
     }
 
     return tagText
+  }
+
+  setOptions(options: XmlParserOptions) {
+    const {
+      type,
+      ignoredTags,
+      ignoredTagAttrs,
+      onTagParsed,
+    } = options
+    if (type) this.parseType = type
+    if (ignoredTags) this.ignoredTags = ignoredTags
+    if (ignoredTagAttrs )this.ignoredTagAttrs = ignoredTagAttrs
+    if (onTagParsed) this.onTagParsed = onTagParsed
   }
 
   parseFromString(xmlText: string) {
