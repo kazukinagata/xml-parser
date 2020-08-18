@@ -1,6 +1,6 @@
 {
   "name": "@kazukinagata/react-xml-parser",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "XML parser for react",
   "main": "dist/index.js",
   "types": "dist/index.js",
