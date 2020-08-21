@@ -137,7 +137,7 @@ export default class {
           : sanitizedAttributeVal
     })
 
-    return this.onTagParsed ? this.onTagParsed(tag) : tag
+    return tag
   }
 
   private _inlineStyleToObject(styles: string) {
@@ -200,12 +200,12 @@ export default class {
     const xmlTree: Tree[] = []
 
     while (xml.length > 0) {
-      const tag = xml.shift()
+      let tag = xml.shift()
       if (!tag) continue
-
       if (tag.value.indexOf('</') > -1 || tag.name.match(/\/$/)) {
         tag.name = tag.name.replace(/\/$/, '').trim()
         tag.value = tag.value.substring(0, tag.value.indexOf('</')).trim()
+        tag = this.onTagParsed ? this.onTagParsed(tag) : tag
         xmlTree.push(tag)
         continue
       }
@@ -214,9 +214,10 @@ export default class {
         break
       }
 
-      xmlTree.push(tag)
       tag.children = this._convertTagsArrayToTree(xml)
       tag.value = decodeURIComponent(tag.value.trim())
+      tag = this.onTagParsed ? this.onTagParsed(tag) : tag
+      xmlTree.push(tag)
     }
     return xmlTree
   }
