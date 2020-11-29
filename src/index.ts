@@ -2,6 +2,9 @@ import { Tree, XmlParserOptions, ParseType } from './types'
 import { ELEMENT_TAG_NAME_MAPPING, ATTRIBUTE_MAPPING } from './const'
 import { hyphenToCamelCase, camelCaseToHyphen, invertObject } from './utils'
 
+const INVERT_ELEMENT_TAG_NAME_MAPPING = invertObject(ELEMENT_TAG_NAME_MAPPING)
+const INVERT_ATTRIBUTE_MAPPING = invertObject(ATTRIBUTE_MAPPING)
+
 export default class {
   private parseType: ParseType = "react"
   private ignoredTags: string[] = []
@@ -177,12 +180,12 @@ export default class {
   }
   private _getTagName(tagName: string, invert: boolean = false) {
     const map = invert
-      ? invertObject(ELEMENT_TAG_NAME_MAPPING)
+      ? INVERT_ELEMENT_TAG_NAME_MAPPING
       : ELEMENT_TAG_NAME_MAPPING
     return this.parseType === 'react' && map[tagName] ? map[tagName] : tagName
   }
   private _getAttributeKey(key: string, invert: boolean = false) {
-    const map = invert ? invertObject(ATTRIBUTE_MAPPING) : ATTRIBUTE_MAPPING
+    const map = invert ? INVERT_ATTRIBUTE_MAPPING : ATTRIBUTE_MAPPING
     return this.parseType === 'react' && map[key] ? map[key] : key
   }
   private _parseValue(tagValue: string) {
